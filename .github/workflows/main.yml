@@ -1,28 +1,29 @@
-#The name of your workflow.
-name:  Test, build and deploy
-# Trigger the workflow on push or pull request
-on: [push,pull_request]
-#A workflow run is made up of one or more jobs. Jobs run in parallel by default.
+# 触发工作流的操作
+on: push
+# 工作流名字
+name: Test, Build and Release apk
+# 需要执行的任务
 jobs:
-
-  test:
-    #The type of machine to run the job on. [windows,macos, ubuntu , self-hosted]
+  build:
+    name: Build APK
+    # 定义运行环境
     runs-on: ubuntu-latest
-    #sequence of tasks called
+    # 执行步骤
     steps:
-      # The branch or tag ref that triggered the workflow will be checked out.
-      # https://github.com/actions/checkout
+      # 步骤执行之前，先拉取最新代码
       - uses: actions/checkout@v1
-      # Setup a flutter environment.
-      # https://github.com/marketplace/actions/flutter-action
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "12.x"
+      # 配置 Flutter 环境
       - uses: subosito/flutter-action@v1
         with:
-          flutter-version: '1.12.14'
-          channel: 'dev'
+          flutter-version: "1.22.6"
+      # 执行构建之前，更新 flutter 依赖
       - run: flutter pub get
-      - run: flutter config --enable-web
-      # - run: flutter test
-      - run: flutter build apk
+      # 测试
+      - run: flutter test
+      - run: flutter build apk --debug --split-per-abi
       - name: Create a Release APK
         uses: ncipollo/release-action@v1
         with:
